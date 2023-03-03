@@ -4,7 +4,7 @@
   "description": "",
   "bin": "exec-nf-pdf.js",
   "scripts": {
-    "start": "exec-fatura-txt.js"
+    "start": "exec-nf-dental-pdf.js"
   },
   "pkg": {
     "assets": "C:\\Faturas-automatizado\\*.csv",

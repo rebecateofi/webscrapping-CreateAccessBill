@@ -86,7 +86,7 @@ async function ExecuteWebScraping(users) {
 											if(!fs.existsSync(enterpriseName)){
 												fs.mkdirSync(enterpriseName);
 											}
-											if(sendDate == '20' || sendDate == '25' ||  sendDate == '5'){
+											if(sendDate == '20' || sendDate == '25'){
 												fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 													if (err) console.log(err.message);
 												});

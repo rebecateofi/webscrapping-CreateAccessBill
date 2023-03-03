@@ -91,8 +91,11 @@ async function ExecuteWebScraping(users) {
 					for (const pageTarget of pages) {
 						try {
 							await pageTarget.waitForTimeout(2000);
-							const bt_continuar = await pageTarget.$('embed');
-							if (bt_continuar !== null) {
+							const extractedText = await pageTarget.$eval('*', (el) => el.innerText);
+							await pageTarget.waitForTimeout(2000);
+							const name = extractedText.includes("LTDA(MAIS ODONTO)");
+							var dateNow = new Date();
+							if (name !== false) {
 								await pageTarget.waitForTimeout(2000);
 								const url1 = pageTarget.url();
 								const raspar = new Crawler({
@@ -126,13 +129,12 @@ async function ExecuteWebScraping(users) {
 														console.log(err.message);
 												});
 											}	
+											pageTarget.close();
 										}
 										done();
 									}
 								});
 								raspar.queue(url1);
-								pageTarget.close();
-								break;
 							}
 							else{
 								continue;				
