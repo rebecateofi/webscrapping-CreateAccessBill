@@ -2,13 +2,18 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS } = require("./utility/constants");
+const { IsApplicationBlocked } = require("./utility/functions");
+
 const app = express()
+
 app.get('/', (req, res) => {
 	res.send('Aplicação rodando');
 })
+
 app.listen(3040, async () => {
 	try {
-		var data = fs.readFileSync('C:\\Faturas-automatizado\\acesso.csv')
+		var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS)
 			.toString() // convert Buffer to string
 			.split('\n') // split string to lines
 			.map(e => e.trim()) // remove white spaces for each line
@@ -21,7 +26,10 @@ app.listen(3040, async () => {
 	if (!await IsApplicationBlocked())
 		ExecuteWebScraping(data);
 })
-async function ExecuteWebScraping(users) {
+
+
+async function ExecuteWebScraping(users) 
+{
 	const browser = await puppeteer.launch({
 		ignoreHTTPSErrors: true,
 		headless: false,
@@ -30,8 +38,8 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		var typing = 'Boleto Dental PDF';
-		if (!fs.existsSync('C:\\Faturas-automatizado\\' + typing)) {
-			fs.mkdirSync('C:\\Faturas-automatizado\\' + typing);
+		if (!fs.existsSync(PASTA_GERAR_FATURA_AUTOMATIZADA + typing)) {
+			fs.mkdirSync(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
 		}
 		const page = await browser.newPage();
 		try {
@@ -77,8 +85,8 @@ async function ExecuteWebScraping(users) {
 											console.log(error.message);
 											pageTarget.close();
 										} else {
-											var groupName = 'C:\\Faturas-automatizado\\' + typing + '\\'+ user[6];
-											var enterpriseName = 'C:\\Faturas-automatizado\\' + typing + '\\'+ user[6] + '\\' + user[7];
+											var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
+											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
 											var sendDate = user[9];
 											if (!fs.existsSync(groupName)){
 												fs.mkdirSync(groupName);
@@ -87,18 +95,18 @@ async function ExecuteWebScraping(users) {
 												fs.mkdirSync(enterpriseName);
 											}
 											if(sendDate == '20' || sendDate == '25' ||  sendDate == '5'){
-												fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 													if (err) console.log(err.message);
 												});
-												fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 													if (err)
 														console.log(err.message);
 												});	
 											}else{
-												fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 													if (err) console.log(err.message);
 												});
-												fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 													if (err)
 														console.log(err.message);
 												});	
@@ -123,7 +131,7 @@ async function ExecuteWebScraping(users) {
 				}
 			}
 			catch (err1) {
-				fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err1) {
+				fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err1) {
 					if (err1)
 						console.log(err1.message);
 				});
@@ -131,7 +139,7 @@ async function ExecuteWebScraping(users) {
 		}
 		catch
 		{
-			fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});
@@ -140,28 +148,6 @@ async function ExecuteWebScraping(users) {
 			page.close() 
 			}
 		}
-	}
+}
 
-async function IsApplicationBlocked(message) {
-	var limitDate = new Date("2023-12-10T00:00:00");
-	var dateNow = new Date();
-	if (limitDate < dateNow) {
-		await ShowMessage('A aplicação necessita de atualização!\nDigite enter para fechar.');
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-async function ShowMessage(message) {
-	const { promisify } = require('util');
-	const readline = require('readline');
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout
-	});
-	const question = promisify(
-		rl.question
-	).bind(rl);
-	await question(message);
-}
+
