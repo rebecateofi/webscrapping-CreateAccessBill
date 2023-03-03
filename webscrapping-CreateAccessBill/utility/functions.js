@@ -1,3 +1,4 @@
+const fs = require("fs");
 
 async function IsApplicationBlocked(message) {
 	var limitDate = new Date("2023-12-10T00:00:00");
@@ -11,6 +12,11 @@ async function IsApplicationBlocked(message) {
 	}
 }
 
+function CreateFolderIfItDoesNotExists(folderName)
+{
+	if (!fs.existsSync(folderName))
+		fs.mkdirSync(folderName);
+}
 
 async function ShowMessage(message) {
 	const { promisify } = require('util');
@@ -26,6 +32,7 @@ async function ShowMessage(message) {
 }
 
 module.exports = {
-	IsApplicationBlocked
+	IsApplicationBlocked,
+	CreateFolderIfItDoesNotExists
   };
   

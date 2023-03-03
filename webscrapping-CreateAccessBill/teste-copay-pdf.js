@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { IsApplicationBlocked } = require("./utility/functions");
+const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
 	const app = express()
@@ -34,9 +34,9 @@ async function ExecuteWebScraping(users) {
 	for (const user of users) {
 		const page = await browser.newPage();
 		var typing = 'Copay Saúde PDF';
-		if (!fs.existsSync('C:\\Faturas-automatizado\\' + typing)) {
-			fs.mkdirSync('C:\\Faturas-automatizado\\' + typing);
-		}
+		
+		CreateFolderIfItDoesNotExists('C:\\Faturas-automatizado\\' + typing);
+
 		try {
 			await page.goto('https://webhap.hapvida.com.br/pls/webhap/webNewTrocaArquivo.login');
 			await page.waitForTimeout('input[name="pCpf"]');
@@ -75,12 +75,11 @@ async function ExecuteWebScraping(users) {
 								var groupName = 'C:\\Faturas-automatizado\\' + typing + '\\' + user[6];
 								var enterpriseName = 'C:\\Faturas-automatizado\\' + typing + '\\' + user[6] + '\\' + user[7];
 								var sendDate = user[9];
-								if (!fs.existsSync(groupName)){
-									fs.mkdirSync(groupName);
-								}
-								if(!fs.existsSync(enterpriseName)){
-									fs.mkdirSync(enterpriseName);
-								}
+								
+								CreateFolderIfItDoesNotExists(groupName);
+
+								CreateFolderIfItDoesNotExists(enterpriseName);
+
 								if(sendDate == '20' || sendDate == '25' || sendDate == '1'){
 									fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[0] + '.pdf', res.body, function (err) {
 										if (err) console.log(err.message);

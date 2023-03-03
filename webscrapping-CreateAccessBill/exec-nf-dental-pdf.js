@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require("fs");
 const express = require("express");
-const { IsApplicationBlocked } = require("./utility/functions");
+const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
 	const app = express()
@@ -33,9 +33,9 @@ async function ExecuteWebScraping(users) {
 	for (const user of users) {
 		const page = await browser.newPage();
 		var typing = 'Nota Fiscal Dental PDF';
-		if (!fs.existsSync('C:\\Faturas-automatizado\\' + typing)) {
-			fs.mkdirSync('C:\\Faturas-automatizado\\' + typing);
-		}
+		
+		CreateFolderIfItDoesNotExists('C:\\Faturas-automatizado\\' + typing);
+
 		try {
 			await page.goto('https://www.hapvida.com.br/pls/podontow/webNewDentalEmpresarial.pr_login_empresa_opmenu?pOpMenu=4');
 			await page.waitForTimeout(3000);
@@ -102,12 +102,10 @@ async function ExecuteWebScraping(users) {
 								var enterpriseName = 'C:\\Faturas-automatizado\\' + typing + '\\'+ user[6] + '\\' + user[7];
 								var sendDate = user[9];
 
-								if (!fs.existsSync(groupName)){
-									fs.mkdirSync(groupName);
-								}
-								if(!fs.existsSync(enterpriseName)){
-									fs.mkdirSync(enterpriseName);
-								}
+								CreateFolderIfItDoesNotExists(groupName);
+
+								CreateFolderIfItDoesNotExists(enterpriseName);
+
 								if(sendDate == '20' || sendDate == '25'){
 									fs.rename('C:\\users\\user\\downloads\\relatorio.pdf', 'C:\\Faturas-automatizado\\'  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
 										if ( err ) console.log('ERROR: ' + err);
