@@ -3,7 +3,8 @@ const fs = require("fs");
 const express = require("express");
 const http = require("https");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
-
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, isDateValid, isOtherDateValid, userDir } = require("./utility/constants");
+TO
 {
 	const app = express()
 	app.get('/', (req, res) => {
@@ -11,8 +12,8 @@ const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utili
 	})
 	app.listen(3053, async () => {
 		try {
-			var data = fs.readFileSync('C:\\Faturas-automatizado\\acesso.csv')
-				.toString() // convert Buffer to string
+			var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS)
+			  	.toString() // convert Buffer to string
 				.split('\n') // split string to lines
 				.map(e => e.trim()) // remove white spaces for each line
 				.map(e => e.split(';').map(e => e.trim())); // split each line to array
@@ -35,9 +36,7 @@ async function ExecuteWebScraping(users) {
 	for (const user of users) {
 		const page = await browser.newPage();
 		var typing = 'Nota Fiscal Saúde PDF';
-		
-		CreateFolderIfItDoesNotExists('C:\\Faturas-automatizado\\' + typing);
-
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUMATIZADA + typing);
 		try {
 			await page.goto('https://webhap.hapvida.com.br/pls/webhap/pk_nota_fiscal.login');
 			await page.waitForTimeout(3000);
@@ -99,29 +98,26 @@ async function ExecuteWebScraping(users) {
 								await pageTarget.waitForSelector('#j_id32\\:panelAcoes > tbody > tr > .col > .btn')
 								await pageTarget.click('#j_id32\\:panelAcoes > tbody > tr > .col > .btn')
 								await pageTarget.waitForTimeout(4000);
-								var groupName = 'C:\\Faturas-automatizado\\' + typing + '\\'+ user[6];
-								var enterpriseName = 'C:\\Faturas-automatizado\\' + typing + '\\'+ user[6] + '\\' + user[7];
+								var groupName = PASTA_GERAR_FATURA_AUMATIZADA + typing + '\\'+ user[6];
+								var enterpriseName = PASTA_GERAR_FATURA_AUMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
 								var sendDate = user[9];
-								
 								CreateFolderIfItDoesNotExists(groupName);
-
 								CreateFolderIfItDoesNotExists(enterpriseName);
-								
-								if(sendDate == '20' || sendDate == '25'||  sendDate == '5'  && day > 12){
+								if(isDateValid || isOtherDateValid){
 									await pageTarget.waitForTimeout(3000);
-									fs.rename('C:\\users\\user\\downloads\\relatorio.pdf', 'C:\\Faturas-automatizado\\'  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
+									fs.rename(userDir +'\\relatorio.pdf', PASTA_GERAR_FATURA_AUMATIZADA  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
 										if ( err ) console.log('ERROR: ' + err);
 									});
-									fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUMATIZADA + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});	
 								}else{
 									await pageTarget.waitForTimeout(3000);
-									fs.rename('C:\\users\\user\\downloads\\relatorio.pdf', 'C:\\Faturas-automatizado\\'  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
+									fs.rename(userDir +'\\relatorio.pdf', PASTA_GERAR_FATURA_AUMATIZADA  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
 										if ( err ) console.log('ERROR: ' + err);
 									});
-									fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUMATIZADA + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});	
@@ -144,7 +140,7 @@ async function ExecuteWebScraping(users) {
 		}
 		catch
 		{
-			fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUMATIZADA + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});

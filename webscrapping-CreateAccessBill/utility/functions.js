@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+
 async function IsApplicationBlocked(message) {
 	var limitDate = new Date("2023-12-10T00:00:00");
 	var dateNow = new Date();
@@ -11,6 +12,7 @@ async function IsApplicationBlocked(message) {
 		return false;
 	}
 }
+
 
 function CreateFolderIfItDoesNotExists(folderName)
 {

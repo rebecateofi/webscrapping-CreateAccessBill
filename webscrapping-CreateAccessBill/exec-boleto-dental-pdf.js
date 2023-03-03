@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, isDateValid, isOtherDateValid } = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 const app = express()
@@ -38,9 +38,7 @@ async function ExecuteWebScraping(users)
 	});
 	for (const user of users) {
 		var typing = 'Boleto Dental PDF';
-
 		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
-
 		const page = await browser.newPage();
 		try {
 			await page.goto('https://www.hapvida.com.br/pls/podontow/webNewDentalEmpresarial.pr_login_empresa_opmenu?pOpMenu=3');
@@ -89,11 +87,9 @@ async function ExecuteWebScraping(users)
 											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
 											var sendDate = user[9];
 											CreateFolderIfItDoesNotExists(groupName);
-											
 											CreateFolderIfItDoesNotExists(enterpriseName);
-											
-											if(sendDate == '20' || sendDate == '25' ||  sendDate == '5'){
-												fs.appendFile('C:\\Faturas-automatizado\\' + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+											if(isDateValid || isOtherDateValid){
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 													if (err) console.log(err.message);
 												});
 												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
