@@ -1,4 +1,4 @@
-# To use this project, you must:
+# To run this project, you must:
 
 ### 1° - Install Node.js
 ### 2° - Install puppeteer
@@ -15,3 +15,5 @@ npm i https
 
 ### 6° - Install crawler
 npm i crawler
+
+# remember to install in project folder to create 'node_modules' folder
