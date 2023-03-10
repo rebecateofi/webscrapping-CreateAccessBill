@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, isDateValid, isOtherDateValid } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
@@ -34,7 +34,7 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		const page = await browser.newPage();
-		var typing = 'Fatura Dental csv';
+		var typing = 'Fatura Dental CSV';
 		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
 		try {
 			await page.waitForTimeout(2000);
@@ -58,8 +58,10 @@ async function ExecuteWebScraping(users) {
 				var sendDate = user[9];
 				var months = 0;
 				var day = dateNow.getDay();
+				const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+				const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
 				var extractedText2 = await page.$eval('tbody > tr:nth-child('+5*(i)+') > td:nth-child(2) > small', (el) => el.innerText);
-				if(sendDate == '20' || sendDate == '25'){
+				if(isDateValid || isOtherDateValid){
 					months = dateNow.getMonth()+2;
 					if(months == 13){
 						months = 01;

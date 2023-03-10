@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, isDateValid, isOtherDateValid } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 const app = express()
@@ -86,6 +86,9 @@ async function ExecuteWebScraping(users)
 											var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
 											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
 											var sendDate = user[9];
+											const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+											const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
+							
 											CreateFolderIfItDoesNotExists(groupName);
 											CreateFolderIfItDoesNotExists(enterpriseName);
 											if(isDateValid || isOtherDateValid){
