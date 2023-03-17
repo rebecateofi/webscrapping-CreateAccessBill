@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS} = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingBillDentalPDF, dateNow, months, day} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 const app = express()
@@ -37,8 +37,7 @@ async function ExecuteWebScraping(users)
 			'C:/Arquivos de Programas/Google/Chrome/Application/chrome.exe'
 	});
 	for (const user of users) {
-		var typing = 'Boleto Dental PDF';
-		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF);
 		const page = await browser.newPage();
 		try {
 			await page.goto('https://www.hapvida.com.br/pls/podontow/webNewDentalEmpresarial.pr_login_empresa_opmenu?pOpMenu=3');
@@ -46,7 +45,6 @@ async function ExecuteWebScraping(users)
 			await page.waitForTimeout('input[name="pCodigoEmpresa"]');
 			await page.type('input[name="pCodigoEmpresa"]', user[0], { delay: 0 });
 			await page.type('input[name="pSenha"]', user[3], { delay: 0 });
-			//user[2], 96301 475271
 			await page.keyboard.press('Enter');
 			await page.waitForTimeout(2000);
 			page.setCacheEnabled(false)
@@ -64,10 +62,7 @@ async function ExecuteWebScraping(users)
 					const pages = await browser.pages();
 					for (const pageTarget of pages) {
 						try {
-							console.log(pageTarget.url());
 							const print = await pageTarget.$('.print > .botao');
-							var dateNow = new Date();
-							var day = dateNow.getDay();
 							if (print !== null) {
 								await pageTarget.$eval('.print > .botao', e => e.setAttribute("type", "hidden"));
 								await pageTarget.emulateMediaType('screen');
@@ -83,27 +78,27 @@ async function ExecuteWebScraping(users)
 											console.log(error.message);
 											pageTarget.close();
 										} else {
-											var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
-											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
+											var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\'+ user[6];
+											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\'+ user[6] + '\\' + user[7];
 											var sendDate = user[9];
-											const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+											const isDateValid = (sendDate == '20' || sendDate == '25') && day >= 16;
 											const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
 							
 											CreateFolderIfItDoesNotExists(groupName);
 											CreateFolderIfItDoesNotExists(enterpriseName);
 											if(isDateValid || isOtherDateValid){
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 													if (err) console.log(err.message);
 												});
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 													if (err)
 														console.log(err.message);
 												});	
 											}else{
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 													if (err) console.log(err.message);
 												});
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 													if (err)
 														console.log(err.message);
 												});	
@@ -128,7 +123,7 @@ async function ExecuteWebScraping(users)
 				}
 			}
 			catch (err1) {
-				fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err1) {
+				fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err1) {
 					if (err1)
 						console.log(err1.message);
 				});
@@ -136,7 +131,7 @@ async function ExecuteWebScraping(users)
 		}
 		catch
 		{
-			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillDentalPDF + '\\problem-boleto-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});

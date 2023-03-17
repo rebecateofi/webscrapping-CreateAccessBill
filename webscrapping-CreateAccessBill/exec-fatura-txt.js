@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS} = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingHealthCSV, dateNow, extensionCSV, months, day} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
@@ -34,8 +34,7 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		const page = await browser.newPage();
-		var typing = 'Fatura Saúde CSV';
-		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV);
 		try {
 			await page.goto('https://webhap.hapvida.com.br/pls/webhap/webNewTrocaArquivo.login');
 			await page.waitForTimeout('input[name="pCpf"]');
@@ -46,25 +45,15 @@ async function ExecuteWebScraping(users) {
 			await page.click('.ultimas_noticias > table > tbody > tr > td > strong > small > a');
 			await page.waitForTimeout(1000);
 			var linksCount = await page.$$eval('#table_id > tbody > tr', links => links.length);
-			console.log(linksCount);
 			const paginateCount = await page.$$eval('#table_id_paginate > span', links => links.length);
-			console.log(paginateCount);
 			for(var i=1; i<=9; i++){
 				var extractedText1 = await page.$eval('#table_id > tbody > tr:nth-child('+i+') > td.sorting_1 > small > a', (el) => el.innerText);
 				const substring = user[1];
-				const extension2 = "CSV";
 				const constCode = extractedText1.includes(substring);
-				const constExtension = extractedText1.includes(extension2);
-				var dateNow = new Date();
+				const constExtension = extractedText1.includes(extensionCSV);
 				var sendDate = user[9];
-				var months = 0;
-				var day = dateNow.getDay();
-				const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+				const isDateValid = (sendDate == '20' || sendDate == '25') && day >= 16;
 				const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
-
-				console.log(substring);
-				console.log(extractedText1);
-				
 				var extractedText2 = await page.$eval('#table_id > tbody > tr:nth-child('+(i)+') > td:nth-child(2) > small', (el) => el.innerText);
 				if(isDateValid || isOtherDateValid){
 					months = dateNow.getMonth()+2;
@@ -79,7 +68,6 @@ async function ExecuteWebScraping(users) {
 				}	
 				await page.waitForTimeout(3000);
 				function splitStr(str) {
-					console.log(str);
 					const monthDate = str.split(" ")[2];
 					global.monthDate1 = monthDate.split("/")[1];
 				}
@@ -96,24 +84,24 @@ async function ExecuteWebScraping(users) {
 							if (error) {
 								console.log(error.message);
 							} else {
-								const groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
-								const enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
+								const groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\'+ user[6];
+								const enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\'+ user[6] + '\\' + user[7];
 								CreateFolderIfItDoesNotExists(groupName);
 								CreateFolderIfItDoesNotExists(enterpriseName);
 								if(isDateValid || isOtherDateValid){
-										fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[1] + '.csv', res.body, function (err) {
+										fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[1] + '.csv', res.body, function (err) {
 											if (err) console.log(err.message);
 									});
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-saude-csv.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\problem-fatura-saude-csv.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});	
 
 								}else{
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - FATURA ' + user[1] + '.csv', res.body, function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - FATURA ' + user[1] + '.csv', res.body, function (err) {
 										if (err) console.log(err.message);
 									});
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-saude-csv.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\problem-fatura-saude-csv.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});	
@@ -142,7 +130,7 @@ async function ExecuteWebScraping(users) {
 			if (error7) {
 					console.log(error7.message);
 				}
-			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-saude-csv.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthCSV + '\\problem-fatura-saude-csv.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});

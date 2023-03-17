@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingHealthPDF, dateNow, extensionPDF, months, day } = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
@@ -34,8 +34,7 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		const page = await browser.newPage();
-		var typing = 'Fatura Saúde PDF';
-		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF);
 		try {
 			await page.goto('https://webhap.hapvida.com.br/pls/webhap/webNewTrocaArquivo.login');
 			await page.waitForTimeout('input[name="pCpf"]');
@@ -45,24 +44,16 @@ async function ExecuteWebScraping(users) {
 			await page.waitForTimeout(1000);
 			await page.click('.ultimas_noticias > table > tbody > tr > td > strong > small > a');
 			var linksCount = await page.$$eval('#table_id > tbody > tr', links => links.length);
-			console.log(linksCount);
 			const paginateCount = await page.$$eval('#table_id_paginate > span', links => links.length);
-			console.log(paginateCount);
 			for(var i=1; i<=linksCount; i++){
 
+				await page.waitForTimeout(1000);
 				var extractedText1 = await page.$eval('#table_id > tbody > tr:nth-child('+(i)+') > td.sorting_1 > small > a', (el) => el.innerText);
 				const substring = user[1];
-				const extension2 = "PDF";
 				const constCode = extractedText1.includes(substring);
-				const constExtension = extractedText1.includes(extension2);
-				console.log(substring);
-				console.log(constCode);
-				console.log(extractedText1);
-				var dateNow = new Date();
+				const constExtension = extractedText1.includes(extensionPDF);
 				var sendDate = user[9];
-				var months = 0;
-				var day = dateNow.getDay();
-				const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+				const isDateValid = (sendDate == '20' || sendDate == '25') && day >= 16;
 				const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
 
 				var extractedText2 = await page.$eval('#table_id > tbody > tr:nth-child('+(i)+') > td:nth-child(2) > small', (el) => el.innerText);
@@ -79,40 +70,40 @@ async function ExecuteWebScraping(users) {
 				}	
 				await page.waitForTimeout(3000);
 				function splitStr(str) {
-					console.log(str);
 					const monthDate = str.split(" ")[2];
 					global.monthDate1 = monthDate.split("/")[1];
 				}
 				splitStr(extractedText2); 
 
 				if(((constCode == true && monthDate1 == months) && constExtension == true)){
+					await page.waitForTimeout(1000);
 					await page.click('#table_id_wrapper > #table_id > tbody > tr:nth-child('+(i)+') > td > small > a');
 					await page.waitForTimeout(1000);
 					await page.click('.ultimas_noticias > table > tbody > tr > td > p > a');
+					await page.waitForTimeout(1000);
 					const url1 = page.url();
 					const raspar = new Crawler({
 						callback: function (error, res, done) {
 							if (error) {
 								console.log(error.message);
 							} else {
-								const groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
-								const enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
-								const sendDate = user[9];								
+								const groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\'+ user[6];
+								const enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\'+ user[6] + '\\' + user[7];
 								CreateFolderIfItDoesNotExists(groupName);
 								CreateFolderIfItDoesNotExists(enterpriseName);
 								if(isDateValid || isOtherDateValid){
-										fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
+										fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
 											if (err) console.log(err.message);
 										});
-										fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+										fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\problem-fatura-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 											if (err)
 												console.log(err.message);
 										});	
 								}else{
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
 										if (err) console.log(err.message);
 									});
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\problem-fatura-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});
@@ -143,7 +134,7 @@ async function ExecuteWebScraping(users) {
 			if (error7) {
 				console.log(error7.message);
 			}
-			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingHealthPDF + '\\problem-fatura-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});

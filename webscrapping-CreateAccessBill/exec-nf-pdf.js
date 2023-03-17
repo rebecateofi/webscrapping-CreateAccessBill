@@ -3,7 +3,7 @@ const fs = require("fs");
 const express = require("express");
 const http = require("https");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, userDir } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, userDir, typingNFHealthPDF, dateNow, months, day } = require("./utility/constants");
 
 {
 	const app = express()
@@ -35,8 +35,7 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		const page = await browser.newPage();
-		var typing = 'Nota Fiscal Saúde PDF';
-		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typingNFHealthPDF);
 		try {
 			await page.goto('https://webhap.hapvida.com.br/pls/webhap/pk_nota_fiscal.login');
 			await page.waitForTimeout(3000);
@@ -45,17 +44,11 @@ async function ExecuteWebScraping(users) {
 			await page.type('input[name="pSenha"]', user[3], { delay: 100 });
 			await page.waitForTimeout(3000);
 			await page.keyboard.press('Enter');
-			//user[2], 96301 475271
             await page.waitForTimeout(3000);
 			for(var i=0; i<=9; i++){
 				var extractedText1 = await page.$eval('.table-rel > tbody > tr:nth-child('+(i+1)+') > td:nth-child(1) > a', (el) => el.innerText);
 				const substring = user[1];
-				var dateNow = new Date();
-				var day = dateNow.getDay();
 				const constFm = extractedText1.includes(substring);
-				console.log(substring);
-				console.log(constFm);
-				console.log(extractedText1);
 				if(constFm == true){
 					await page.click('.table-rel > tbody > tr:nth-child('+(i+1)+') > td:nth-child(1) > a');            await page.waitForTimeout(3000);			
 					const extractedText = await page.$eval('body > .ui-dialog > #dialog-modal > p', (el) => el.innerText);
@@ -98,29 +91,29 @@ async function ExecuteWebScraping(users) {
 								await pageTarget.waitForSelector('#j_id32\\:panelAcoes > tbody > tr > .col > .btn')
 								await pageTarget.click('#j_id32\\:panelAcoes > tbody > tr > .col > .btn')
 								await pageTarget.waitForTimeout(4000);
-								var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
-								var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
+								var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingNFHealthPDF + '\\'+ user[6];
+								var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingNFHealthPDF + '\\'+ user[6] + '\\' + user[7];
 								var sendDate = user[9];
-								const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+								const isDateValid = (sendDate == '20' || sendDate == '25') && day >= 16;
 								const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
 				
 								CreateFolderIfItDoesNotExists(groupName);
 								CreateFolderIfItDoesNotExists(enterpriseName);
 								if(isDateValid || isOtherDateValid){
 									await pageTarget.waitForTimeout(3000);
-									fs.rename(userDir +'\\relatorio.pdf', PASTA_GERAR_FATURA_AUTOMATIZADA  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
+									fs.rename(userDir +'\\relatorio.pdf', PASTA_GERAR_FATURA_AUTOMATIZADA  + typingNFHealthPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
 										if ( err ) console.log('ERROR: ' + err);
 									});
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingNFHealthPDF + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});	
 								}else{
 									await pageTarget.waitForTimeout(3000);
-									fs.rename(userDir +'\\relatorio.pdf', PASTA_GERAR_FATURA_AUTOMATIZADA  + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
+									fs.rename(userDir +'\\relatorio.pdf', PASTA_GERAR_FATURA_AUTOMATIZADA  + typingNFHealthPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) +' - NOTA FISCAL ' + user[1] + '.pdf', function(err) {
 										if ( err ) console.log('ERROR: ' + err);
 									});
-									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+									fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingNFHealthPDF + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 										if (err)
 											console.log(err.message);
 									});	
@@ -143,7 +136,7 @@ async function ExecuteWebScraping(users) {
 		}
 		catch
 		{
-			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingNFHealthPDF + '\\problem-nf-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});

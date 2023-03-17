@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS} = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingBillHealthPDF, dateNow, months, day} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 const app = express()
 
@@ -34,8 +34,7 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		var page = await browser.newPage();
-		var typing = 'Boleto Saúde PDF';
-		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF);
 	
 		try {
 			await page.goto('https://webhap.hapvida.com.br/pls/webhap/webNewBoletoEmpresa.login');
@@ -50,7 +49,6 @@ async function ExecuteWebScraping(users) {
 				await page.waitForTimeout(4000);
 				const extractedText3 = await page.$('.ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset > .ui-button > .ui-button-text');
 				await page.waitForTimeout(4000);
-				console.log(extractedText3);
 				if(extractedText3 !== null){				
 					await page.click('.ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset > .ui-button > .ui-button-text');
 					await page.waitForTimeout(4000);
@@ -98,23 +96,14 @@ async function ExecuteWebScraping(users) {
 							const pages1 = await browser.pages();
 							for (const pageTarget1 of pages1) {
 								try {
-									console.log(pageTarget1.url());
-								// try {
 									const print = await pageTarget1.$('.print > .botao');									
-								// 	console.log(print);
-								// } catch(err){
-								// 	console.log(err)
-								// }
-									
+	
 									if (print !== null) {
-										console.log("SIM");
 										await pageTarget1.waitForTimeout(4000);
 										await pageTarget1.$eval('body > p > input', e => e.setAttribute("type", "hidden"));
 										await pageTarget1.waitForTimeout(2000);
 										await pageTarget1.emulateMediaType('screen');
 										await pageTarget1.waitForTimeout(2000);
-										var dateNow = new Date();
-										var day = dateNow.getDay();
 										const pdf = await pageTarget1.pdf({
 											margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
 											printBackground: true,
@@ -126,29 +115,28 @@ async function ExecuteWebScraping(users) {
 											callback: function (error, res, done) {
 												if (error) {
 													console.log(error.message);
-													// pageTarget1.close();
 												} else {
-													var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
-													var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
+													var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\'+ user[6];
+													var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\'+ user[6] + '\\' + user[7];
 													var sendDate = user[9];
-													const isDateValid = (sendDate == '20' || sendDate == '25') && day > 16;
+													const isDateValid = (sendDate == '20' || sendDate == '25') && day >= 16;
 													const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
 									
 													CreateFolderIfItDoesNotExists(groupName);
 													CreateFolderIfItDoesNotExists(enterpriseName);
 													if(isDateValid || isOtherDateValid){
-														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 															if (err) console.log(err.message);
 														});
-														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 															if (err)
 																console.log(err.message);
 														});	
 													}else{
-														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
+														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - BOLETO ' + user[1] + '.pdf', pdf, function (err) {
 															if (err) console.log(err.message);
 														});
-														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+														fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 															if (err)
 																console.log(err.message);
 														});	
@@ -174,7 +162,7 @@ async function ExecuteWebScraping(users) {
 						}
 					}
 					catch (err5) {
-						fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err5) {
+						fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err5) {
 							if (err5)
 								console.log(err5.message);
 						});
@@ -182,7 +170,7 @@ async function ExecuteWebScraping(users) {
 					}
 				}
 				else{
-					fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err1) {
+					fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err1) {
 					if (err1)
 						console.log(err1.message);
 					});
@@ -190,7 +178,7 @@ async function ExecuteWebScraping(users) {
 			}
 			catch (err2) {
 				console.log(err2.message);
-				fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err2) {
+				fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err2) {
 					if (err2)
 						console.log(err2.message);
 				});
@@ -199,7 +187,7 @@ async function ExecuteWebScraping(users) {
 		}
 		catch
 		{
-			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err4) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingBillHealthPDF + '\\problem-boleto-saude-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err4) {
 				if (err4)
 					console.log(err4.message);
 			});
