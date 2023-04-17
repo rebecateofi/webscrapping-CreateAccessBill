@@ -3,7 +3,7 @@ const fs = require("fs");
 const express = require("express");
 const http = require("https");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, userDir, typingNFHealthPDF, dateNow, months, day } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, userDir, typingNFHealthPDF, dateNow, day } = require("./utility/constants");
 
 {
 	const app = express()

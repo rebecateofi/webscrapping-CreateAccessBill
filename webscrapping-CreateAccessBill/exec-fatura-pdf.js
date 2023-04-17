@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingHealthPDF, dateNow, extensionPDF, months, day } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingHealthPDF, dateNow, extensionPDF, day } = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
@@ -44,8 +44,7 @@ async function ExecuteWebScraping(users) {
 			await page.waitForTimeout(1000);
 			await page.click('.ultimas_noticias > table > tbody > tr > td > strong > small > a');
 			var linksCount = await page.$$eval('#table_id > tbody > tr', links => links.length);
-			const paginateCount = await page.$$eval('#table_id_paginate > span', links => links.length);
-			for(var i=1; i<=linksCount; i++){
+			for(var i=1; i<=9; i++){
 
 				await page.waitForTimeout(1000);
 				var extractedText1 = await page.$eval('#table_id > tbody > tr:nth-child('+(i)+') > td.sorting_1 > small > a', (el) => el.innerText);
@@ -115,18 +114,12 @@ async function ExecuteWebScraping(users) {
 					raspar.queue(url1);
 					break;
 				}
-				else if((constCode !== true || monthDate1 !== months) && paginateCount<2){
-					continue;
-				}
-				else if((constCode !== true || monthDate1 !== months) && paginateCount>2){
-					await page.click('#table_id > tbody > tr:nth-child(2)');
-					var linksCount1 = await page.$$eval('#table_id > tbody > tr', links => links.length);
-					global.linksCount =  linksCount1;
+				else if((constCode !== true || monthDate1 !== months)){
 					continue;
 				}
 				else{
 					break;
-				}	
+				}
 			}
 		}
 		catch(error7)

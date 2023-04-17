@@ -4,7 +4,7 @@
   "description": "",
   "bin": "exec-nf-pdf.js",
   "scripts": {
-    "start": "exec-nf-dental-pdf.js"
+    "start": "concurrently \"node exec-fatura-txt.js\" \"node exec-fatura-pdf.js\" \"node exec-boleto-pdf.js\" \"node exec-nf-pdf.js\" \"node exec-fatura-dental-pdf.js\" \"node exec-fatura-dental-txt.js\"  \"node exec-boleto-dental-pdf.js\" \"node exec-nf-dental-pdf.js\""
   },
   "pkg": {
     "assets": "C:\\Faturas-automatizado\\*.csv",
@@ -21,6 +21,7 @@
     "pdf-lib": "^1.17.1",
     "pdfjs": "^2.4.7",
     "puppeteer-extra": "^3.3.4",
+    "concurrently": "^6.0.2",
     "puppeteer-extra-plugin-user-preferences": "^2.4.0"
   },
   "devDependencies": {

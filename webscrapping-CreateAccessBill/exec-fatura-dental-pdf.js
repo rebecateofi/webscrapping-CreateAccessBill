@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingDentalPDF, dateNow, extensionPDF, months, day } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS_DENTAL, typingDentalPDF, dateNow, extensionPDF, day } = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
@@ -10,9 +10,9 @@ const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utili
 	app.get('/', (req, res) => {
 		res.send('Aplicação rodando');
 	})
-	app.listen(3054, async () => {
+	app.listen(3056, async () => {
 		try {
-			var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS)
+			var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS_DENTAL)
 			   	.toString() // convert Buffer to string
 				.split('\n') // split string to lines
 				.map(e => e.trim()) // remove white spaces for each line
@@ -34,7 +34,7 @@ async function ExecuteWebScraping(users) {
 	});
 	for (const user of users) {
 		const page = await browser.newPage();
-		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typing);
+		CreateFolderIfItDoesNotExists(PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF);
 		try {
 			await page.waitForTimeout(2000);
 			await page.goto('https://www.hapvida.com.br/pls/podontow/webNewDentalEmpresarial.pr_login_empresa_opmenu?pOpMenu=8');
@@ -50,7 +50,7 @@ async function ExecuteWebScraping(users) {
 				var extractedText1 = await page.$eval('tbody > tr:nth-child('+5*(i)+') > td:nth-child(1) > small > a', (el) => el.innerText);
 				const substring = user[1];
 				const constCode = extractedText1.includes(substring);
-				const constExtension = extractedText1.includes(extension);
+				const constExtension = extractedText1.includes(extensionPDF);
 				var sendDate = user[9];
 				const isDateValid = (sendDate == '20' || sendDate == '25') && day >= 16;
 				const isOtherDateValid = (sendDate == '1' || sendDate == '5') && day > 25;
@@ -93,23 +93,23 @@ async function ExecuteWebScraping(users) {
 											console.log(error.message);
 											pageTarget.close();
 										} else {
-											var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6];
-											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\'+ user[6] + '\\' + user[7];
+											var groupName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\'+ user[6];
+											var enterpriseName = PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\'+ user[6] + '\\' + user[7];
 											CreateFolderIfItDoesNotExists(groupName);
 											CreateFolderIfItDoesNotExists(enterpriseName);
 											if(isDateValid || isOtherDateValid){
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+2) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
 													if (err) console.log(err.message);
 												});
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\problem-fatura-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 													if (err)
 														console.log(err.message);
 												});	
 											}else{
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\' + user[6] + '\\' + user[7] + '\\' + (dateNow.getMonth()+1) + ' - FATURA ' + user[1] + '.pdf', res.body, function (err) {
 													if (err) console.log(err.message);
 												});
-												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
+												fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\problem-fatura-dental-pdf.txt', user[1] + " - " + user[7] + " - OK" + "\r\n", function (err) {
 													if (err)
 														console.log(err.message);
 												});
@@ -144,7 +144,7 @@ async function ExecuteWebScraping(users) {
 			if (error7) {
 				console.log(error7.message);
 			}
-			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typing + '\\problem-fatura-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
+			fs.appendFile(PASTA_GERAR_FATURA_AUTOMATIZADA + typingDentalPDF + '\\problem-fatura-dental-pdf.txt', user[1] + " - " + user[7] + " - ERRO" + "\r\n", function (err) {
 				if (err)
 					console.log(err.message);
 			});

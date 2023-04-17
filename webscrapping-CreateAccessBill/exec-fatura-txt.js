@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingHealthCSV, dateNow, extensionCSV, months, day} = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingHealthCSV, dateNow, extensionCSV, day} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {

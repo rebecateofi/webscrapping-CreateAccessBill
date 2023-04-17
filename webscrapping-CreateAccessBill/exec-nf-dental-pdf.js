@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, userDir, typingNFDentalPDF, dateNow, months, day } = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS_DENTAL, userDir, typingNFDentalPDF, dateNow, day } = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 {
@@ -9,9 +9,9 @@ const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utili
 	app.get('/', (req, res) => {
 		res.send('Aplicação rodando');
 	})
-	app.listen(3053, async () => {
+	app.listen(3044, async () => {
 		try {
-			var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS)
+			var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS_DENTAL)
 				.toString() // convert Buffer to string
 				.split('\n') // split string to lines
 				.map(e => e.trim()) // remove white spaces for each line

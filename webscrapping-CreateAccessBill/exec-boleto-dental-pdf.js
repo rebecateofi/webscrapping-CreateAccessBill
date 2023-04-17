@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingBillDentalPDF, dateNow, months, day} = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS_DENTAL, typingBillDentalPDF, dateNow, day} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 
 const app = express()
@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 
 app.listen(3040, async () => {
 	try {
-		var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS)
+		var data = fs.readFileSync(PASTA_GERAR_FATURA_AUTOMATIZADA + ARQUIVO_ACESSOS_DENTAL)
 			.toString() // convert Buffer to string
 			.split('\n') // split string to lines
 			.map(e => e.trim()) // remove white spaces for each line

@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const Crawler = require('crawler');
 const fs = require("fs");
 const express = require("express");
-const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingBillHealthPDF, dateNow, months, day} = require("./utility/constants");
+const { PASTA_GERAR_FATURA_AUTOMATIZADA, ARQUIVO_ACESSOS, typingBillHealthPDF, dateNow, day} = require("./utility/constants");
 const { IsApplicationBlocked, CreateFolderIfItDoesNotExists } = require("./utility/functions");
 const app = express()
 
@@ -49,6 +49,22 @@ async function ExecuteWebScraping(users) {
 				await page.waitForTimeout(4000);
 				const extractedText3 = await page.$('.ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset > .ui-button > .ui-button-text');
 				await page.waitForTimeout(4000);
+
+				const selectHandle = await page.$('body > div.main.corpo > div > div > small > form > table > tbody > tr:nth-child(3) > td:nth-child(3) > p > select');
+  
+				const options = await selectHandle.$$('body > div.main.corpo > div > div > small > form > table > tbody > tr:nth-child(3) > td:nth-child(3) > p > select > option');
+				function splitStr(str) {
+					const monthDate = str.split(" ")[2];
+					global.monthDate1 = monthDate.split("/")[1];
+				}
+				splitStr(extractedText2); 
+				// for (let option of options) {
+				//   const optionText = await option.getProperty('textContent');
+				//   console.log(`Text: ${await optionText.jsonValue()}`);
+				// }
+				// await page.click('body > div.main.corpo > div > div > small > form > table > tbody > tr:nth-child(3) > td:nth-child(3) > p > select > option');
+				await page.waitForTimeout(4000);
+
 				if(extractedText3 !== null){				
 					await page.click('.ui-dialog > .ui-dialog-buttonpane > .ui-dialog-buttonset > .ui-button > .ui-button-text');
 					await page.waitForTimeout(4000);
